@@ -11,5 +11,12 @@ Repository of helper methods to query Linux services
 * **epoch**. [SF]. Returns the number of seconds since the Unix epoch as a Smalltalk Integer.
 * **time**. [S]. Returns the current Linux time as a `Time` ibject. 
 
+## List of topics I wish to cover 
+* **stat**. Se a file property
+* **lsof**. Status of open files, 
+* *network*. Status of network connections 
+* **df**. Available disk space 
+* **mem**. Available system memory 
+* **top**. System load 
 
  
