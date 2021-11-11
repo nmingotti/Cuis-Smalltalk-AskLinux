@@ -7,8 +7,9 @@ Repository of helper methods to query Linux services
 
 ## List of methods currently implemented 
 * Abbreviations: S (implemented as Shell command), F (implemented as FFI command).
-* **date**. [S]. Return the current Linux date as a `DateAndTime` object.
-* **time**. [S]. Return the current Linux time as a `Time` ibject. 
+* **date**. [S]. Returns the current Linux date as a `DateAndTime` object.
+* **epoch**. [SF]. Returns the number of seconds since the Unix epoch as a Smalltalk Integer.
+* **time**. [S]. Returns the current Linux time as a `Time` ibject. 
 
 
  
