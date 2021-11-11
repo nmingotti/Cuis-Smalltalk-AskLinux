@@ -1,9 +1,10 @@
-'From Cuis 5.0 [latest update: #4963] on 11 November 2021 at 8:42:25 am'!
+'From Cuis 5.0 [latest update: #4963] on 11 November 2021 at 9:23:09 am'!
 'Description '!
-!provides: 'AskLinux' 1 10!
+!provides: 'AskLinux' 1 12!
 !requires: 'CommandShell' 1 2 nil!
 !requires: 'OSProcess' 1 18 nil!
 SystemOrganization addCategory: 'AskLinux-CStruct'!
+SystemOrganization addCategory: 'AskLinux-Test'!
 SystemOrganization addCategory: #AskLinux!
 
 
@@ -45,6 +46,16 @@ ExternalStructure subclass: #StructCtm
 	category: 'AskLinux-CStruct'!
 !classDefinition: 'StructCtm class' category: 'AskLinux-CStruct'!
 StructCtm class
+	instanceVariableNames: ''!
+
+!classDefinition: #AskLinuxTest category: 'AskLinux-Test'!
+TestCase subclass: #AskLinuxTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AskLinux-Test'!
+!classDefinition: 'AskLinuxTest class' category: 'AskLinux-Test'!
+AskLinuxTest class
 	instanceVariableNames: ''!
 
 
@@ -97,6 +108,17 @@ date
 	self assert: (pr exitCode = 0).
 	out _ pr output. 
 	^ DateAndTime fromString: out! !
+
+!LinuxShell class methodsFor: 'tested' stamp: 'NM 11/11/2021 09:19:35'!
+epoch 
+	". Returns the number of seconds since the unix epoch. Return smalltalk Integer. 
+	"
+	|pr cmd out|
+	cmd _ 'date +''%s'' '.
+	pr _ PipeableOSProcess waitForCommand: cmd .
+	self assert: (pr exitCode = 0).
+	out _ pr output. 
+	^ out asNumber  ! !
 
 !LinuxShell class methodsFor: 'tested' stamp: 'NM 11/10/2021 16:17:19'!
 time 
@@ -242,4 +264,8 @@ fields
 !StructCtm class methodsFor: 'as yet unclassified' stamp: 'NM 11/6/2021 15:18:15'!
 initialize
 	self compileFields! !
+
+!AskLinuxTest methodsFor: 'test-ffi-vs-shell' stamp: 'NM 11/11/2021 09:21:38'!
+testEpoch
+	self assert: (LinuxShell epoch = LinuxFFI epoch ).! !
 StructCtm initialize!
