@@ -1,11 +1,12 @@
-'From Cuis 5.0 [latest update: #4963] on 11 November 2021 at 9:23:09 am'!
+'From Cuis 5.0 [latest update: #4908] on 10 February 2022 at 11:54:20 pm'!
 'Description '!
-!provides: 'AskLinux' 1 12!
+!provides: 'AskLinux' 1 16!
 !requires: 'CommandShell' 1 2 nil!
+!requires: 'FFI' 1 33 nil!
 !requires: 'OSProcess' 1 18 nil!
-SystemOrganization addCategory: 'AskLinux-CStruct'!
-SystemOrganization addCategory: 'AskLinux-Test'!
 SystemOrganization addCategory: #AskLinux!
+SystemOrganization addCategory: #'AskLinux-CStruct'!
+SystemOrganization addCategory: #'AskLinux-Test'!
 
 
 !classDefinition: #LinuxFFI category: #AskLinux!
@@ -28,33 +29,33 @@ Object subclass: #LinuxShell
 LinuxShell class
 	instanceVariableNames: ''!
 
-!classDefinition: #StructCtime_t category: 'AskLinux-CStruct'!
+!classDefinition: #StructCtime_t category: #'AskLinux-CStruct'!
 ExternalStructure subclass: #StructCtime_t
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'AskLinux-CStruct'!
-!classDefinition: 'StructCtime_t class' category: 'AskLinux-CStruct'!
+!classDefinition: 'StructCtime_t class' category: #'AskLinux-CStruct'!
 StructCtime_t class
 	instanceVariableNames: ''!
 
-!classDefinition: #StructCtm category: 'AskLinux-CStruct'!
+!classDefinition: #StructCtm category: #'AskLinux-CStruct'!
 ExternalStructure subclass: #StructCtm
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'AskLinux-CStruct'!
-!classDefinition: 'StructCtm class' category: 'AskLinux-CStruct'!
+!classDefinition: 'StructCtm class' category: #'AskLinux-CStruct'!
 StructCtm class
 	instanceVariableNames: ''!
 
-!classDefinition: #AskLinuxTest category: 'AskLinux-Test'!
+!classDefinition: #AskLinuxTest category: #'AskLinux-Test'!
 TestCase subclass: #AskLinuxTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'AskLinux-Test'!
-!classDefinition: 'AskLinuxTest class' category: 'AskLinux-Test'!
+!classDefinition: 'AskLinuxTest class' category: #'AskLinux-Test'!
 AskLinuxTest class
 	instanceVariableNames: ''!
 
@@ -91,8 +92,42 @@ stat: pathString
 	"
 	^ nil ! !
 
-!LinuxShell class methodsFor: 'tested' stamp: 'NM 11/7/2021 01:52:02'!
+!LinuxShell class methodsFor: 'tested' stamp: 'NM 2/10/2022 23:54:04'!
 date 
+	". Return a DateAndTime object which is made according to the 
+	result obtained by Linux `$> date`.
+	. RATIO. We want to be sure the time takes into account changes due 
+	to daylight save time change, Linux does that automatically, Cuis
+	`DateAndTime now` at Nov-2021 does not. 
+	. In Cuis 'DateAndTime localTimeZone' default to 'UTC'. 
+	. The time is red in from Linux as a string without the timezone, in absolute terms,
+	in this way it is passed to DateAndTime. 
+	"
+	|cmd out d in err proc oExit oOut oErr args|
+	cmd _ '/usr/bin/date'.
+	args _ {'+%Y-%m-%dT%H:%M:%S'. } .
+	"pr _ PipeableOSProcess waitForCommand: cmd . "
+	
+	d _ Delay forMilliseconds: 50.
+	in _ nil.
+	out _ '/tmp/test.out' asFileEntry forceWriteStream .
+	err _  '/tmp/test.err' asFileEntry forceWriteStream .
+	proc _ UnixProcess forkJob: cmd
+                              arguments: args environment: nil 
+                   				descriptors: {in. out. err.}.	
+	[proc runState == #complete] whileFalse: [d wait].                
+	oExit _ proc exitCode .         
+	oOut _ out contents. 
+	oErr _ err contents. {oErr. args. } .
+	{in. out. err} do: [ :f | f ifNotNil: [ f close ] ].	
+	self assert: (oExit = 0).
+	out _ oOut. 
+ 	out _ out withBlanksTrimmed . 
+	^ DateAndTime fromString: out .
+	! !
+
+!LinuxShell class methodsFor: 'tested' stamp: 'NM 2/10/2022 22:08:20'!
+dateOld 
 	". Return a DateAndTime object which is made according to the 
 	result obtained by Linux `$> date`.
 	. RATIO. We want to be sure the time takes into account changes due 
@@ -105,6 +140,8 @@ date
 	|pr cmd out|
 	cmd _ 'date +''%Y-%m-%dT%H:%M:%S'' '.
 	pr _ PipeableOSProcess waitForCommand: cmd .
+	
+	
 	self assert: (pr exitCode = 0).
 	out _ pr output. 
 	^ DateAndTime fromString: out! !
